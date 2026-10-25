@@ -81,9 +81,6 @@ const readConfig = (): { config: Config; problems: string[] } => {
   const appId = required('GITHUB_APP_ID');
   const privateKey = required('GITHUB_APP_PRIVATE_KEY');
   const repos = list(process.env.WATCH_REPOS);
-  if (repos.length === 0) {
-    problems.push('WATCH_REPOS is not set (comma-separated owner/repo)');
-  }
   for (const repo of repos.filter((entry) => !/^[\w.-]+\/[\w.-]+$/.test(entry))) {
     problems.push(`WATCH_REPOS: "${repo}" is not owner/repo`);
   }
@@ -205,7 +202,7 @@ if (problems.length > 0) {
     const github = new GitHubApp(config.appId, config.privateKey);
     pool = new Pool(github, config.runnerName, config.labels, config.jobEnv);
     const active = pool;
-    log(`${config.runnerName} watching ${config.repos.join(', ')} with up to ${String(config.maxJobs)} jobs, labels ${config.labels.join(', ')}`);
+    log(`${config.runnerName} watching ${config.repos.join(', ') || 'nothing yet'} with up to ${String(config.maxJobs)} jobs, labels ${config.labels.join(', ')}`);
     void loop(github, active);
   } catch (cause) {
     problems.push(`GITHUB_APP_PRIVATE_KEY is not a valid PEM private key: ${cause instanceof Error ? cause.message : String(cause)}`);

@@ -14,7 +14,8 @@
     },
     {
       "name": "WATCH_REPOS",
-      "description": "Repositories this runner serves, comma-separated owner/repo; set by the orchestrator"
+      "description": "Repositories this runner serves, comma-separated owner/repo; set by the orchestrator",
+      "required": false
     },
     {
       "name": "MAX_JOBS",
