@@ -5,6 +5,19 @@ const TOKEN_MARGIN_MS = 5 * 60_000;
 const JWT_LIFETIME_SECONDS = 540;
 const JWT_SKEW_SECONDS = 60;
 
+const PEM_BLOCK = /-----BEGIN ([A-Z ]+)-----([\s\S]*?)-----END \1-----/;
+const PEM_LINE = 64;
+
+const pem = (raw: string): string => {
+  const text = raw.replace(/\\n/g, '\n').trim();
+  const [, label, content] = PEM_BLOCK.exec(text) ?? [];
+  if (label === undefined || content === undefined) {
+    return text;
+  }
+  const body = content.replace(/\s+/g, '').match(new RegExp(`.{1,${String(PEM_LINE)}}`, 'g')) ?? [];
+  return `-----BEGIN ${label}-----\n${body.join('\n')}\n-----END ${label}-----\n`;
+};
+
 export class GitHubError extends Error {
   constructor(
     readonly status: number,
@@ -30,7 +43,7 @@ export class GitHubApp {
     private readonly appId: string,
     privateKey: string,
   ) {
-    this.key = createPrivateKey(privateKey.replace(/\\n/g, '\n'));
+    this.key = createPrivateKey(pem(privateKey));
   }
 
   private jwt(): string {
