@@ -1,0 +1,24 @@
+services:
+  runner:
+    build: .
+    restart: unless-stopped
+    stop_grace_period: 11m
+    environment:
+      GITHUB_APP_ID: ${GITHUB_APP_ID:-}
+      GITHUB_APP_PRIVATE_KEY: ${GITHUB_APP_PRIVATE_KEY:-}
+      WATCH_REPOS: ${WATCH_REPOS:-}
+      MAX_JOBS: ${MAX_JOBS:-2}
+      RUNNER_NAME: ${RUNNER_NAME:-}
+      RUNNER_LABELS: ${RUNNER_LABELS:-fleet}
+      POLL_SECONDS: ${POLL_SECONDS:-30}
+      JOB_ENV: ${JOB_ENV:-}
+    volumes:
+      - work:/work
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/health > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+volumes:
+  work:
