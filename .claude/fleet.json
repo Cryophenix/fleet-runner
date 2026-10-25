@@ -3,12 +3,38 @@
   "exposure": "private",
   "health": "/health",
   "env": [
-    { "name": "GITHUB_APP_ID", "description": "App id of the fleet-runners GitHub App", "secret": false, "required": true },
-    { "name": "GITHUB_APP_PRIVATE_KEY", "description": "Private key (PEM) of the fleet-runners GitHub App", "secret": true, "required": true },
-    { "name": "WATCH_REPOS", "description": "Repositories this runner serves, comma-separated owner/repo; set by the orchestrator", "secret": false, "required": true },
-    { "name": "MAX_JOBS", "description": "Jobs run at the same time", "example": "2", "secret": false, "required": false },
-    { "name": "RUNNER_NAME", "description": "Server name, prefix of every runner name", "example": "theo-vps", "secret": false, "required": true },
-    { "name": "RUNNER_LABELS", "description": "Labels a job must ask for, besides self-hosted, linux, x64", "example": "fleet", "secret": false, "required": false },
-    { "name": "JOB_ENV", "description": "JSON of variables given to jobs, per repository or \"*\" (preview credentials, Console CI token)", "secret": true, "required": false }
+    {
+      "name": "GITHUB_APP_ID",
+      "description": "App id of the fleet-runners GitHub App"
+    },
+    {
+      "name": "GITHUB_APP_PRIVATE_KEY",
+      "description": "Private key (PEM) of the fleet-runners GitHub App",
+      "secret": true
+    },
+    {
+      "name": "WATCH_REPOS",
+      "description": "Repositories this runner serves, comma-separated owner/repo; set by the orchestrator"
+    },
+    {
+      "name": "MAX_JOBS",
+      "description": "Jobs run at the same time",
+      "required": false
+    },
+    {
+      "name": "RUNNER_NAME",
+      "description": "Server name, prefix of every runner name"
+    },
+    {
+      "name": "RUNNER_LABELS",
+      "description": "Labels a job must ask for, besides self-hosted, linux, x64",
+      "required": false
+    },
+    {
+      "name": "JOB_ENV",
+      "description": "JSON of variables given to jobs, per repository or \"*\" (preview credentials, Console CI token)",
+      "secret": true,
+      "required": false
+    }
   ]
 }
