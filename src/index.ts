@@ -137,7 +137,7 @@ const pollRepo = async (github: GitHubApp, active: Pool, repo: string): Promise<
 };
 
 const poll = async (github: GitHubApp, active: Pool): Promise<void> => {
-  let succeeded = false;
+  let succeeded = config.repos.length === 0;
   for (const repo of config.repos) {
     try {
       await pollRepo(github, active, repo);
