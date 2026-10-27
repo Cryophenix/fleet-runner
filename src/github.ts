@@ -105,6 +105,15 @@ export class GitHubApp {
     return created.token;
   }
 
+  async readToken(repo: string): Promise<string> {
+    const id = await this.installationId(repo);
+    const created = await this.send<{ token: string }>('POST', `/app/installations/${String(id)}/access_tokens`, `Bearer ${this.jwt()}`, {
+      repositories: [repo.split('/')[1] ?? repo],
+      permissions: { contents: 'read' },
+    });
+    return created.token;
+  }
+
   async request<T>(method: string, repo: string, path: string, body?: unknown): Promise<T> {
     try {
       return await this.send<T>(method, `/repos/${repo}${path}`, `token ${await this.token(repo)}`, body);

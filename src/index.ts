@@ -21,6 +21,7 @@ interface Config {
   requiredLabels: string[];
   pollMs: number;
   jobEnv: Record<string, Record<string, string>>;
+  frameworkRepo: string;
   port: number;
 }
 
@@ -84,6 +85,10 @@ const readConfig = (): { config: Config; problems: string[] } => {
   for (const repo of repos.filter((entry) => !/^[\w.-]+\/[\w.-]+$/.test(entry))) {
     problems.push(`WATCH_REPOS: "${repo}" is not owner/repo`);
   }
+  const frameworkRepo = process.env.FRAMEWORK_REPO?.trim() || 'Cryophenix/my-framework';
+  if (!/^[\w.-]+\/[\w.-]+$/.test(frameworkRepo)) {
+    problems.push(`FRAMEWORK_REPO: "${frameworkRepo}" is not owner/repo`);
+  }
   const runnerName = required('RUNNER_NAME');
   const requiredLabels = list(process.env.RUNNER_LABELS ?? 'fleet').map((label) => label.toLowerCase());
   const config: Config = {
@@ -96,6 +101,7 @@ const readConfig = (): { config: Config; problems: string[] } => {
     requiredLabels,
     pollMs: positive(process.env.POLL_SECONDS, 30, 'POLL_SECONDS', problems) * 1000,
     jobEnv: parseJobEnv(process.env.JOB_ENV, problems),
+    frameworkRepo,
     port: positive(process.env.PORT, 8080, 'PORT', problems),
   };
   return { config, problems };
@@ -200,7 +206,7 @@ if (problems.length > 0) {
 } else {
   try {
     const github = new GitHubApp(config.appId, config.privateKey);
-    pool = new Pool(github, config.runnerName, config.labels, config.jobEnv);
+    pool = new Pool(github, config.runnerName, config.labels, config.jobEnv, config.frameworkRepo);
     const active = pool;
     log(`${config.runnerName} watching ${config.repos.join(', ') || 'nothing yet'} with up to ${String(config.maxJobs)} jobs, labels ${config.labels.join(', ')}`);
     void loop(github, active);

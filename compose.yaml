@@ -12,6 +12,7 @@ services:
       RUNNER_LABELS: ${RUNNER_LABELS:-fleet}
       POLL_SECONDS: ${POLL_SECONDS:-30}
       JOB_ENV: ${JOB_ENV:-}
+      FRAMEWORK_REPO: ${FRAMEWORK_REPO:-Cryophenix/my-framework}
     volumes:
       - work:/work
     healthcheck:

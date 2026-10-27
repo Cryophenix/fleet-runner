@@ -11,7 +11,7 @@ const TEMPLATE = '/work/runner';
 const TEMPLATE_VERSION = '/work/runner.version';
 const IDLE_LIMIT_MS = 10 * 60_000;
 const STOP_GRACE_MS = 10 * 60_000;
-const HIDDEN_ENV = ['GITHUB_APP_PRIVATE_KEY', 'GITHUB_APP_ID', 'JOB_ENV'];
+const HIDDEN_ENV = ['GITHUB_APP_PRIVATE_KEY', 'GITHUB_APP_ID', 'JOB_ENV', 'FRAMEWORK_REPO'];
 
 export interface Child {
   repo: string;
@@ -77,6 +77,7 @@ export class Pool {
     private readonly runnerName: string,
     private readonly labels: string[],
     private readonly jobEnv: Record<string, Record<string, string>>,
+    private readonly frameworkRepo: string,
   ) {}
 
   forRepo(repo: string): Child[] {
@@ -91,8 +92,17 @@ export class Pool {
     }
   }
 
-  private environment(repo: string): NodeJS.ProcessEnv {
-    const env: NodeJS.ProcessEnv = { ...process.env, ...this.jobEnv['*'], ...this.jobEnv[repo] };
+  private async frameworkToken(): Promise<Record<string, string>> {
+    try {
+      return { FRAMEWORK_TOKEN: await this.github.readToken(this.frameworkRepo) };
+    } catch (cause) {
+      log(`jobs get no FRAMEWORK_TOKEN, ${this.frameworkRepo} is not readable: ${cause instanceof Error ? cause.message : String(cause)}`);
+      return {};
+    }
+  }
+
+  private async environment(repo: string): Promise<NodeJS.ProcessEnv> {
+    const env: NodeJS.ProcessEnv = { ...process.env, ...(await this.frameworkToken()), ...this.jobEnv['*'], ...this.jobEnv[repo] };
     for (const name of HIDDEN_ENV) {
       Reflect.deleteProperty(env, name);
     }
@@ -120,9 +130,10 @@ export class Pool {
       await this.deleteRunner(repo, created.runner.id);
       throw cause;
     }
+    const env = await this.environment(repo);
     const child = spawn(path.join(slot, 'run.sh'), ['--jitconfig', created.encoded_jit_config], {
       cwd: slot,
-      env: this.environment(repo),
+      env,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     const entry: Child = { repo, name, runnerId: created.runner.id, since: Date.now(), busy: false, process: child, slot };
